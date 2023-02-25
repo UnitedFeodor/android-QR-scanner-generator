@@ -3,15 +3,14 @@ package com.example.qr_scanner_generator;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Display;
-import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -37,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         // initializing all variables.
         readQrBtn = findViewById(R.id.idBtnReadQR);
@@ -78,6 +78,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        if (Build.VERSION.SDK_INT >= 30) {
+            if (!Environment.isExternalStorageManager()) {
+                Intent getpermission = new Intent();
+                getpermission.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(getpermission);
+            }
+        }
+
         readQrBtn.setOnClickListener(v -> {
             /*
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
@@ -110,10 +118,23 @@ public class MainActivity extends AppCompatActivity {
             return;
         switch (requestCode) {
             case PICKFILE_RESULT_CODE:
-                Toast.makeText(MainActivity.this, "HELLLOOAODOASDA", Toast.LENGTH_SHORT).show();
                 if (resultCode == RESULT_OK) {
-                    String FilePath = data.getData().getPath();
-                    //FilePath is your file as a string
+                    Toast.makeText(MainActivity.this, "Trying to decode the QR...", Toast.LENGTH_SHORT).show();
+                    String filePath = data.getData().getPath();
+                    if(filePath.contains("document/raw:")){
+                        filePath = filePath.replace("/document/raw:","");
+                    }
+
+                    // file path: /storage/emulated/0/Pictures/QR_code_for_mobile_English_Wikipedia.png
+                    qrCodeIV.setImageBitmap(BitmapFactory.decodeFile(filePath));
+                    String resDataText = QRreader.decodeQRImage(filePath);
+                    if (resDataText == null) {
+                        Toast.makeText(MainActivity.this, "QR not found!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "QR decoded!", Toast.LENGTH_SHORT).show();
+                    }
+                    dataEdt.setText(resDataText);
+
                 }
         }
 
