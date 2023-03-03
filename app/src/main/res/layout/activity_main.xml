@@ -49,4 +49,15 @@
         android:layout_marginEnd="20dp"
         android:text="@string/read_qr_code" />
 
+    <Button
+        android:id="@+id/scanBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
+        android:layout_below="@id/idBtnReadQR"
+        android:backgroundTint="#0F9D58"
+        android:text="@string/scan_using_camera"/>
+
 </RelativeLayout>

@@ -24,6 +24,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 import androidmads.library.qrgenearator.QRGContents;
 import androidmads.library.qrgenearator.QRGEncoder;
 
@@ -32,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     // variables for imageview, edittext,
     // button, bitmap and qrencoder.
     private Button readQrBtn;
+    private Button scanBtn;
     private ImageView qrCodeIV;
     private EditText dataEdt;
     private Button generateQrBtn;
@@ -54,6 +58,15 @@ public class MainActivity extends AppCompatActivity {
         qrCodeIV = findViewById(R.id.idIVQrcode);
         dataEdt = findViewById(R.id.idEdt);
         generateQrBtn = findViewById(R.id.idBtnGenerateQR);
+
+        scanBtn = findViewById(R.id.scanBtn);
+        scanBtn.setOnClickListener((l) -> {
+            IntentIntegrator intentIntegrator = new IntentIntegrator(this);
+            intentIntegrator.setPrompt("Scan a QR Code");
+            intentIntegrator.setOrientationLocked(true);
+            intentIntegrator.initiateScan();
+
+        });
 
         // initializing onclick listener for button.
         generateQrBtn.setOnClickListener(v -> {
@@ -173,6 +186,24 @@ public class MainActivity extends AppCompatActivity {
                     dataEdt.setText(resDataText);
 
                 }
+            default: {
+                IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+                // if the intentResult is null then
+                // toast a message as "cancelled"
+                if (intentResult != null) {
+                    if (intentResult.getContents() == null) {
+                        Toast.makeText(getBaseContext(), "Cancelled", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // if the intentResult is not null we'll set
+                        // the content and format of scan message
+                        qrCodeIV.setImageDrawable(null);
+                        dataEdt.setText(intentResult.getContents());
+                        Toast.makeText(MainActivity.this, "QR decoded!", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    super.onActivityResult(requestCode, resultCode, data);
+                }
+            }
         }
 
     }
