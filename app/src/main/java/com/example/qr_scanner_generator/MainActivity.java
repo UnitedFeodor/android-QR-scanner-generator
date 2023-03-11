@@ -3,6 +3,9 @@ package com.example.qr_scanner_generator;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -159,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO Fix no activity available
         super.onActivityResult(requestCode, resultCode, data);
         if (data == null)
             return;
@@ -167,12 +169,12 @@ public class MainActivity extends AppCompatActivity {
             case PICKFILE_RESULT_CODE:
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(MainActivity.this, "Trying to decode the QR...", Toast.LENGTH_SHORT).show();
-                    //String filePath = data.getData().getPath();
-                    String filePath = Utils.getActualPath(this, data.getData());
-
+                    String filePath = data.getData().getPath();
 
                     if(filePath.contains("document/raw:")){
                         filePath = filePath.replace("/document/raw:","");
+                    } else {
+                        filePath = Utils.getActualPath(this, data.getData());
                     }
 
                     // file path: /storage/emulated/0/Pictures/QR_code_for_mobile_English_Wikipedia.png
@@ -182,8 +184,14 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, "QR not found!", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(MainActivity.this, "QR decoded!", Toast.LENGTH_SHORT).show();
+
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText("scanned QR contents", resDataText);
+                        clipboard.setPrimaryClip(clip);
                     }
                     dataEdt.setText(resDataText);
+
+
 
                 }
             default: {
@@ -199,6 +207,10 @@ public class MainActivity extends AppCompatActivity {
                         qrCodeIV.setImageDrawable(null);
                         dataEdt.setText(intentResult.getContents());
                         Toast.makeText(MainActivity.this, "QR decoded!", Toast.LENGTH_SHORT).show();
+
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText("scanned QR contents", intentResult.getContents());
+                        clipboard.setPrimaryClip(clip);
                     }
                 } else {
                     super.onActivityResult(requestCode, resultCode, data);
